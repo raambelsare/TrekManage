@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+{% block title %}{{ trek.name }} — TrekManage{% endblock %}
+{% block content %}
+
+<div class="page-header">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('user_dashboard') }}">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="{{ url_for('user_treks') }}">Browse Treks</a></li>
+                <li class="breadcrumb-item active">{{ trek.name }}</li>
+            </ol>
+        </nav>
+        <div class="d-flex gap-2 align-items-center flex-wrap">
+            <h2 class="mb-0">{{ trek.name }}</h2>
+            <span class="badge badge-diff-{{ trek.difficulty }}">{{ trek.difficulty }}</span>
+            <span class="badge badge-status-{{ trek.status }}">{{ trek.status }}</span>
+        </div>
+        <p class="mt-1"><i class="bi bi-geo-alt me-1"></i>{{ trek.location }}</p>
+    </div>
+</div>
+
+<div class="container">
+    <div class="row g-4">
+
+        {# Trek Details #}
+        <div class="col-lg-8">
+            <div class="table-card">
+                {# Hero banner #}
+                <div class="trek-banner trek-banner-{{ trek.difficulty|lower }} mb-4"
+                     style="border-radius:10px; height:200px; font-size:1rem;">
+                    {% if trek.difficulty == 'Easy' %}
+                        <i class="bi bi-tree" style="font-size:3.5rem;"></i>
+                    {% elif trek.difficulty == 'Hard' %}
+                        <i class="bi bi-tsunami" style="font-size:3.5rem;"></i>
+                    {% else %}
+                        <i class="bi bi-mountain" style="font-size:3.5rem;"></i>
+                    {% endif %}
+                </div>
+
+                <h5 class="section-title mb-2">About this Trek</h5>
+                <p class="text-muted mb-4" style="line-height:1.7;">
+                    {{ trek.description or "No description has been added for this trek yet." }}
+                </p>
+
+                <hr>
+
+                {# Info grid #}
+                <div class="row g-3 mt-1">
+                    <div class="col-6 col-md-3 text-center">
+                        <div class="bg-sand rounded-3 p-3">
+                            <i class="bi bi-clock fs-4 text-forest d-block mb-1"></i>
+                            <div class="fw-600">{{ trek.duration }} days</div>
+                            <div class="small text-muted">Duration</div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3 text-center">
+                        <div class="bg-sand rounded-3 p-3">
+                            <i class="bi bi-currency-rupee fs-4 text-clay d-block mb-1"></i>
+                            <div class="fw-600">₹{{ "%.0f"|format(trek.price) }}</div>
+                            <div class="small text-muted">Per Person</div>
+                        </div>
+                    </div>
+                    {% if trek.start_date %}
+                    <div class="col-6 col-md-3 text-center">
+                        <div class="bg-sand rounded-3 p-3">
+                            <i class="bi bi-calendar-event fs-4 text-sky-dark d-block mb-1"
+                               style="color:var(--sky-dark)!important;"></i>
+                            <div class="fw-600">{{ trek.start_date.strftime('%d %b') }}</div>
+                            <div class="small text-muted">Start Date</div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3 text-center">
+                        <div class="bg-sand rounded-3 p-3">
+                            <i class="bi bi-calendar2-check fs-4 d-block mb-1" style="color:var(--moss);"></i>
+                            <div class="fw-600">{{ trek.end_date.strftime('%d %b %Y') }}</div>
+                            <div class="small text-muted">End Date</div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <hr class="mt-3">
+
+                <div class="d-flex align-items-center gap-2 mt-3">
+                    <i class="bi bi-person-badge fs-5 text-muted"></i>
+                    <span class="small text-muted">Trek Guide:</span>
+                    <span class="fw-600 small">{{ trek.staff.name if trek.staff else 'To be assigned' }}</span>
+                </div>
+            </div>
+        </div>
+
+        {# Booking Card #}
+        <div class="col-lg-4">
+            <div class="table-card text-center" style="position:sticky;top:80px;">
+                <h5 class="section-title mb-3">Book Your Spot</h5>
+
+                {# Slot count #}
+                <div class="mb-3">
+                    <div class="stat-value">{{ trek.available_slots }}</div>
+                    <div class="stat-title">Slots Remaining</div>
+                </div>
+
+                {# Slot bar #}
+                {% set pct = ((trek.available_slots / trek.total_slots) * 100)|int if trek.total_slots > 0 else 0 %}
+                <div class="progress mb-3" style="height:8px;border-radius:10px;">
+                    <div class="progress-bar {% if pct <= 20 %}bg-danger{% elif pct <= 50 %}bg-warning{% else %}bg-success{% endif %}"
+                         style="width:{{ pct }}%;border-radius:10px;"></div>
+                </div>
+                <p class="small text-muted mb-4">{{ trek.total_slots - trek.available_slots }} of {{ trek.total_slots }} slots filled</p>
+
+                {# CTA #}
+                {% if already_booked %}
+                    <div class="alert alert-success py-2 small">
+                        <i class="bi bi-check-circle-fill me-1"></i>You've already booked this trek!
+                    </div>
+                    <a href="{{ url_for('user_bookings') }}" class="btn btn-outline-brand w-100">
+                        <i class="bi bi-ticket-perforated me-1"></i>View My Bookings
+                    </a>
+
+                {% elif trek.status != 'Open' %}
+                    <div class="alert alert-warning py-2 small">
+                        <i class="bi bi-exclamation-triangle me-1"></i>
+                        This trek is currently <strong>{{ trek.status }}</strong> and not open for booking.
+                    </div>
+                    <button class="btn btn-outline-brand w-100" disabled>Not Open for Booking</button>
+
+                {% elif trek.available_slots <= 0 %}
+                    <div class="alert alert-danger py-2 small">
+                        <i class="bi bi-x-circle me-1"></i>This trek is fully booked.
+                    </div>
+                    <button class="btn btn-outline-brand w-100" disabled>Fully Booked</button>
+
+                {% else %}
+                    <form method="POST" action="{{ url_for('user_book_trek', trek_id=trek.id) }}">
+                        <button type="submit" class="btn btn-brand w-100 py-2">
+                            <i class="bi bi-bag-check me-1"></i>Book This Trek
+                        </button>
+                    </form>
+                    <p class="text-muted small mt-3 mb-0">
+                        <i class="bi bi-shield-check me-1 text-success"></i>
+                        Secure booking. Cancel anytime from My Bookings.
+                    </p>
+                {% endif %}
+            </div>
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+{% block title %}Search — TrekManage{% endblock %}
+{% block content %}
+
+<div class="page-header">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('admin_dashboard') }}">Dashboard</a></li>
+                <li class="breadcrumb-item active">Search</li>
+            </ol>
+        </nav>
+        <h2><i class="bi bi-search me-2 text-clay"></i>Search Records</h2>
+        <p>Find treks, staff, or trekkers by name, username, or email.</p>
+    </div>
+</div>
+
+<div class="container">
+
+    {# Search bar #}
+    <form method="GET" class="table-card mb-4">
+        <div class="d-flex gap-2 flex-wrap align-items-center">
+            <div class="input-group" style="max-width:480px;">
+                <span class="input-group-text bg-white border-end-0">
+                    <i class="bi bi-search text-muted"></i>
+                </span>
+                <input type="text" name="q" class="form-control border-start-0"
+                       style="border-radius:0 var(--input-radius) var(--input-radius) 0;"
+                       placeholder="Search by name, username, email, or location..."
+                       value="{{ query }}" autofocus>
+            </div>
+            <button type="submit" class="btn btn-brand px-4">
+                <i class="bi bi-search me-1"></i>Search
+            </button>
+            {% if query %}
+            <a href="{{ url_for('admin_search') }}" class="btn btn-outline-brand">
+                <i class="bi bi-x-lg me-1"></i>Clear
+            </a>
+            {% endif %}
+        </div>
+    </form>
+
+    {% if query %}
+        {# Results summary #}
+        <p class="text-muted small mb-3">
+            <i class="bi bi-info-circle me-1"></i>
+            Showing results for <strong>"{{ query }}"</strong>:
+            {{ treks|length }} treks, {{ staff|length }} staff, {{ users|length }} trekkers found.
+        </p>
+
+        <div class="row g-4">
+
+            {# Treks #}
+            <div class="col-lg-4">
+                <div class="table-card h-100">
+                    <h6 class="section-title mb-3">
+                        <i class="bi bi-map me-2 text-clay"></i>Treks
+                        <span class="badge bg-light text-dark border ms-1">{{ treks|length }}</span>
+                    </h6>
+                    {% for t in treks %}
+                    <div class="d-flex justify-content-between align-items-start py-2 {% if not loop.last %}border-bottom{% endif %}">
+                        <div>
+                            <div class="fw-600 small">{{ t.name }}</div>
+                            <div class="text-muted" style="font-size:0.75rem;">
+                                <i class="bi bi-geo-alt me-1"></i>{{ t.location }}
+                            </div>
+                        </div>
+                        <div class="d-flex gap-1 ms-2 flex-shrink-0">
+                            <span class="badge badge-diff-{{ t.difficulty }}">{{ t.difficulty }}</span>
+                            <span class="badge badge-status-{{ t.status }}">{{ t.status }}</span>
+                        </div>
+                    </div>
+                    {% else %}
+                    <p class="text-muted small mb-0 fst-italic">No matching treks.</p>
+                    {% endfor %}
+                </div>
+            </div>
+
+            {# Staff #}
+            <div class="col-lg-4">
+                <div class="table-card h-100">
+                    <h6 class="section-title mb-3">
+                        <i class="bi bi-compass me-2 text-clay"></i>Staff
+                        <span class="badge bg-light text-dark border ms-1">{{ staff|length }}</span>
+                    </h6>
+                    {% for s in staff %}
+                    <div class="d-flex align-items-center gap-2 py-2 {% if not loop.last %}border-bottom{% endif %}">
+                        <span class="avatar-circle avatar-sky" style="width:30px;height:30px;font-size:0.75rem;flex-shrink:0;">
+                            {{ s.name[0].upper() }}
+                        </span>
+                        <div>
+                            <div class="fw-600 small">{{ s.name }}</div>
+                            <div class="text-muted" style="font-size:0.72rem;">
+                                @{{ s.username }} &middot;
+                                {% if s.is_blacklisted %}
+                                    <span class="text-danger">Blacklisted</span>
+                                {% elif not s.is_approved %}
+                                    <span class="text-warning">Pending</span>
+                                {% else %}
+                                    <span class="text-success">Active</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% else %}
+                    <p class="text-muted small mb-0 fst-italic">No matching staff.</p>
+                    {% endfor %}
+                </div>
+            </div>
+
+            {# Trekkers #}
+            <div class="col-lg-4">
+                <div class="table-card h-100">
+                    <h6 class="section-title mb-3">
+                        <i class="bi bi-people me-2 text-clay"></i>Trekkers
+                        <span class="badge bg-light text-dark border ms-1">{{ users|length }}</span>
+                    </h6>
+                    {% for u in users %}
+                    <div class="d-flex align-items-center gap-2 py-2 {% if not loop.last %}border-bottom{% endif %}">
+                        <span class="avatar-circle avatar-forest" style="width:30px;height:30px;font-size:0.75rem;flex-shrink:0;">
+                            {{ u.name[0].upper() }}
+                        </span>
+                        <div>
+                            <div class="fw-600 small">{{ u.name }}</div>
+                            <div class="text-muted" style="font-size:0.72rem;">
+                                @{{ u.username }} &middot;
+                                {% if u.is_blacklisted %}
+                                    <span class="text-danger">Blacklisted</span>
+                                {% else %}
+                                    <span class="text-success">Active</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% else %}
+                    <p class="text-muted small mb-0 fst-italic">No matching trekkers.</p>
+                    {% endfor %}
+                </div>
+            </div>
+
+        </div>
+
+    {% else %}
+    <div class="empty-state">
+        <i class="bi bi-search empty-icon"></i>
+        <h6>Search for records</h6>
+        <p>Enter a name, username, email, or location to search across treks, staff, and trekkers.</p>
+    </div>
+    {% endif %}
+</div>
+
+{% endblock %}

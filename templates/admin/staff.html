@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+{% block title %}Manage Staff — TrekManage{% endblock %}
+{% block content %}
+
+<div class="page-header">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('admin_dashboard') }}">Dashboard</a></li>
+                <li class="breadcrumb-item active">Staff</li>
+            </ol>
+        </nav>
+        <h2><i class="bi bi-people me-2 text-clay"></i>Manage Trek Staff</h2>
+        <p>Approve registrations, assign treks, and manage staff accounts.</p>
+    </div>
+</div>
+
+<div class="container">
+    <div class="table-card">
+        {% if staff %}
+        <div class="table-responsive">
+            <table class="table align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Staff Member</th>
+                        <th>Contact</th>
+                        <th>Assigned Treks</th>
+                        <th>Status</th>
+                        <th>Joined</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for s in staff %}
+                <tr>
+                    <td>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="avatar-circle {% if s.is_blacklisted %}avatar-clay{% elif s.is_approved %}avatar-sky{% else %}avatar-moss{% endif %}">
+                                {{ s.name[0].upper() }}
+                            </span>
+                            <div>
+                                <div class="fw-600 small">{{ s.name }}</div>
+                                <div class="text-muted" style="font-size:0.75rem;">@{{ s.username }}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="small">
+                        <div><i class="bi bi-envelope me-1 text-muted"></i>{{ s.email }}</div>
+                        <div class="text-muted"><i class="bi bi-phone me-1"></i>{{ s.phone or '—' }}</div>
+                    </td>
+                    <td>
+                        {% if s.assigned_treks %}
+                            {% for t in s.assigned_treks %}
+                            <span class="badge bg-light text-dark border mb-1 me-1">{{ t.name }}</span>
+                            {% endfor %}
+                        {% else %}
+                            <span class="text-muted small fst-italic">None assigned</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if s.is_blacklisted %}
+                            <span class="badge bg-danger">
+                                <i class="bi bi-ban me-1"></i>Blacklisted
+                            </span>
+                        {% elif not s.is_approved %}
+                            <span class="badge badge-status-Pending">
+                                <i class="bi bi-hourglass-split me-1"></i>Pending
+                            </span>
+                        {% else %}
+                            <span class="badge badge-status-Open">
+                                <i class="bi bi-check-circle me-1"></i>Active
+                            </span>
+                        {% endif %}
+                    </td>
+                    <td class="small text-muted">
+                        {{ s.created_at.strftime('%d %b %Y') }}
+                    </td>
+                    <td class="text-nowrap">
+                        {% if not s.is_approved and not s.is_blacklisted %}
+                        <form method="POST" action="{{ url_for('admin_staff_approve', staff_id=s.id) }}" class="d-inline">
+                            <button type="submit" class="btn btn-sm btn-forest me-1">
+                                <i class="bi bi-check-lg me-1"></i>Approve
+                            </button>
+                        </form>
+                        {% endif %}
+
+                        <form method="POST" action="{{ url_for('admin_toggle_blacklist', user_id=s.id) }}" class="d-inline">
+                            <input type="hidden" name="next" value="{{ url_for('admin_staff') }}">
+                            <button type="submit"
+                                    class="btn btn-sm {% if s.is_blacklisted %}btn-outline-success{% else %}btn-outline-danger{% endif %}">
+                                {% if s.is_blacklisted %}
+                                    <i class="bi bi-arrow-counterclockwise me-1"></i>Reinstate
+                                {% else %}
+                                    <i class="bi bi-ban me-1"></i>Blacklist
+                                {% endif %}
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i class="bi bi-compass empty-icon"></i>
+            <h6>No staff registered yet</h6>
+            <p>Staff accounts will appear here once they register.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}

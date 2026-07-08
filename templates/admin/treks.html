@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+{% block title %}Manage Treks — TrekManage{% endblock %}
+{% block content %}
+
+<div class="page-header">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('admin_dashboard') }}">Dashboard</a></li>
+                <li class="breadcrumb-item active">Treks</li>
+            </ol>
+        </nav>
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <div>
+                <h2><i class="bi bi-map me-2 text-clay"></i>Manage Treks</h2>
+                <p>Add, edit, or remove treks and assign staff.</p>
+            </div>
+            <a href="{{ url_for('admin_trek_new') }}" class="btn btn-brand">
+                <i class="bi bi-plus-lg me-1"></i>New Trek
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <div class="table-card">
+        {% if treks %}
+        <div class="table-responsive">
+            <table class="table align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Trek</th>
+                        <th>Location</th>
+                        <th>Difficulty</th>
+                        <th>Staff</th>
+                        <th>Slots</th>
+                        <th>Status</th>
+                        <th>Dates</th>
+                        <th>Price</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for trek in treks %}
+                <tr>
+                    <td>
+                        <div class="fw-600">{{ trek.name }}</div>
+                        <div class="text-muted" style="font-size:0.75rem;">{{ trek.duration }} days</div>
+                    </td>
+                    <td class="small">
+                        <i class="bi bi-geo-alt me-1 text-muted"></i>{{ trek.location }}
+                    </td>
+                    <td>
+                        <span class="badge badge-diff-{{ trek.difficulty }}">
+                            {% if trek.difficulty == 'Easy' %}<i class="bi bi-tree me-1"></i>
+                            {% elif trek.difficulty == 'Hard' %}<i class="bi bi-tsunami me-1"></i>
+                            {% else %}<i class="bi bi-mountain me-1"></i>{% endif %}
+                            {{ trek.difficulty }}
+                        </span>
+                    </td>
+                    <td class="small">
+                        {% if trek.staff %}
+                        <div class="d-flex align-items-center gap-1">
+                            <span class="avatar-circle avatar-sky" style="width:26px;height:26px;font-size:0.7rem;">
+                                {{ trek.staff.name[0].upper() }}
+                            </span>
+                            <span>{{ trek.staff.name }}</span>
+                        </div>
+                        {% else %}
+                        <span class="text-muted fst-italic">Unassigned</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% set booked = trek.total_slots - trek.available_slots %}
+                        {% set pct = ((booked / trek.total_slots) * 100)|int if trek.total_slots > 0 else 0 %}
+                        <div class="small mb-1">{{ trek.available_slots }}/{{ trek.total_slots }}</div>
+                        <div class="progress-thin" style="width:70px;">
+                            <div class="progress-bar {% if pct >= 90 %}bg-danger{% elif pct >= 60 %}bg-warning{% else %}bg-success{% endif %}"
+                                 style="width:{{ pct }}%"></div>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="badge badge-status-{{ trek.status }}">{{ trek.status }}</span>
+                    </td>
+                    <td class="small text-muted text-nowrap">
+                        {% if trek.start_date %}
+                            {{ trek.start_date.strftime('%d %b') }} – {{ trek.end_date.strftime('%d %b %y') }}
+                        {% else %}
+                            <span class="fst-italic">No dates</span>
+                        {% endif %}
+                    </td>
+                    <td class="small fw-600 text-forest">
+                        ₹{{ "%.0f"|format(trek.price) }}
+                    </td>
+                    <td class="text-nowrap">
+                        <a href="{{ url_for('admin_trek_edit', trek_id=trek.id) }}"
+                           class="btn btn-sm btn-outline-brand me-1">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                        <button type="button" class="btn btn-sm btn-outline-danger"
+                                data-bs-toggle="modal" data-bs-target="#deleteModal{{ trek.id }}">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i class="bi bi-map empty-icon"></i>
+            <h6>No treks yet</h6>
+            <p>Create your first trek to get started.</p>
+            <a href="{{ url_for('admin_trek_new') }}" class="btn btn-brand btn-sm mt-1">
+                <i class="bi bi-plus-lg me-1"></i>Create Trek
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{# Delete confirmation modals #}
+{% for trek in treks %}
+<div class="modal fade" id="deleteModal{{ trek.id }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content shadow-lg">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title">
+                    <i class="bi bi-exclamation-triangle-fill text-danger me-2"></i>Delete Trek
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to permanently delete <strong>{{ trek.name }}</strong>?</p>
+                <p class="small text-muted mb-0">
+                    <i class="bi bi-info-circle me-1"></i>
+                    This will also remove all booking records for this trek.
+                </p>
+            </div>
+            <div class="modal-footer border-0 pt-0">
+                <button type="button" class="btn btn-outline-brand" data-bs-dismiss="modal">Cancel</button>
+                <form method="POST" action="{{ url_for('admin_trek_delete', trek_id=trek.id) }}" class="d-inline">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-trash me-1"></i>Yes, Delete
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+{% endblock %}

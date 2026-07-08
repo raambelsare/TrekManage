@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}{{ code }} Error — TrekManage{% endblock %}
+{% block content %}
+
+<div class="error-page">
+    <div class="error-content text-center">
+        <div class="error-code">{{ code }}</div>
+        <div class="error-icon">
+            {% if code == 404 %}⛺{% elif code == 403 %}🔒{% else %}⚠️{% endif %}
+        </div>
+        <h2 class="mb-2">
+            {% if code == 404 %}Page Not Found
+            {% elif code == 403 %}Access Denied
+            {% else %}Server Error{% endif %}
+        </h2>
+        <p class="text-muted mb-4">{{ message }}</p>
+        <div class="d-flex justify-content-center gap-2 flex-wrap">
+            <a href="javascript:history.back()" class="btn btn-outline-brand">
+                <i class="bi bi-arrow-left me-1"></i>Go Back
+            </a>
+            <a href="{{ url_for('index') }}" class="btn btn-brand">
+                <i class="bi bi-house me-1"></i>Home
+            </a>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

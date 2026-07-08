@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit' if trek else 'New' }} Trek — TrekManage{% endblock %}
+{% block content %}
+
+<div class="page-header">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('admin_dashboard') }}">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="{{ url_for('admin_treks') }}">Treks</a></li>
+                <li class="breadcrumb-item active">{{ 'Edit Trek' if trek else 'New Trek' }}</li>
+            </ol>
+        </nav>
+        <h2>
+            <i class="bi bi-{{ 'pencil-square' if trek else 'plus-circle' }} me-2 text-clay"></i>
+            {{ 'Edit Trek' if trek else 'Create New Trek' }}
+        </h2>
+        <p>{{ 'Update the details for ' + trek.name if trek else 'Fill in the details below to add a new trek route.' }}</p>
+    </div>
+</div>
+
+<div class="container">
+    <div class="table-card" style="max-width:780px;">
+        <form method="POST">
+
+            {# Basic Info #}
+            <h6 class="section-title mb-3 pb-2 border-bottom">
+                <i class="bi bi-info-circle me-2 text-muted"></i>Basic Information
+            </h6>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label" for="name">Trek Name *</label>
+                    <input type="text" class="form-control" id="name" name="name" required
+                           placeholder="e.g. Kedarkantha Trek"
+                           value="{{ trek.name if trek else form.get('name', '') }}">
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label" for="location">Location *</label>
+                    <input type="text" class="form-control" id="location" name="location" required
+                           placeholder="e.g. Uttarakhand"
+                           value="{{ trek.location if trek else form.get('location', '') }}">
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label" for="description">Description</label>
+                <textarea class="form-control" id="description" name="description" rows="3"
+                          placeholder="Describe the trek route, highlights, and what participants can expect...">{{ trek.description if trek else form.get('description', '') }}</textarea>
+            </div>
+
+            {# Trek Details #}
+            <h6 class="section-title mb-3 pb-2 border-bottom mt-4">
+                <i class="bi bi-sliders me-2 text-muted"></i>Trek Details
+            </h6>
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <label class="form-label" for="difficulty">Difficulty</label>
+                    <select class="form-select" id="difficulty" name="difficulty">
+                        {% for d in ['Easy', 'Moderate', 'Hard'] %}
+                        <option value="{{ d }}" {% if trek and trek.difficulty == d %}selected{% endif %}>{{ d }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label" for="duration">Duration (days) *</label>
+                    <input type="number" min="1" class="form-control" id="duration" name="duration" required
+                           placeholder="e.g. 5"
+                           value="{{ trek.duration if trek else form.get('duration', '') }}">
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label" for="price">Price (₹)</label>
+                    <div class="input-group">
+                        <span class="input-group-text">₹</span>
+                        <input type="number" step="0.01" min="0" class="form-control" id="price" name="price"
+                               placeholder="0"
+                               value="{{ trek.price if trek else form.get('price', '0') }}"
+                               style="border-radius:0 var(--input-radius) var(--input-radius) 0;">
+                    </div>
+                </div>
+            </div>
+
+            {# Slots & Dates #}
+            <h6 class="section-title mb-3 pb-2 border-bottom mt-4">
+                <i class="bi bi-calendar-range me-2 text-muted"></i>Slots & Schedule
+            </h6>
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <label class="form-label" for="total_slots">Total Slots *</label>
+                    <input type="number" min="1" class="form-control" id="total_slots" name="total_slots" required
+                           placeholder="e.g. 20"
+                           value="{{ trek.total_slots if trek else form.get('total_slots', '') }}">
+                    {% if trek %}
+                    <div class="form-text">
+                        Currently booked: <strong>{{ trek.total_slots - trek.available_slots }}</strong>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label" for="start_date">Start Date</label>
+                    <input type="date" class="form-control" id="start_date" name="start_date"
+                           value="{{ trek.start_date if trek else '' }}">
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label" for="end_date">End Date</label>
+                    <input type="date" class="form-control" id="end_date" name="end_date"
+                           value="{{ trek.end_date if trek else '' }}">
+                </div>
+            </div>
+
+            {# Assignment #}
+            <h6 class="section-title mb-3 pb-2 border-bottom mt-4">
+                <i class="bi bi-person-badge me-2 text-muted"></i>Staff Assignment
+            </h6>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label" for="assigned_staff_id">Assign Staff</label>
+                    <select class="form-select" id="assigned_staff_id" name="assigned_staff_id">
+                        <option value="">— Not assigned yet —</option>
+                        {% for s in staff_list %}
+                        <option value="{{ s.id }}" {% if trek and trek.assigned_staff_id == s.id %}selected{% endif %}>
+                            {{ s.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                    <div class="form-text">
+                        <i class="bi bi-info-circle me-1"></i>Only approved, active staff appear here.
+                    </div>
+                </div>
+                {% if trek %}
+                <div class="col-md-6 mb-3">
+                    <label class="form-label" for="status">Trek Status</label>
+                    <select class="form-select" id="status" name="status">
+                        {% for st in ['Pending', 'Approved', 'Open', 'Closed', 'Completed'] %}
+                        <option value="{{ st }}" {% if trek.status == st %}selected{% endif %}>{{ st }}</option>
+                        {% endfor %}
+                    </select>
+                    <div class="form-text">
+                        <i class="bi bi-info-circle me-1"></i>Set to <strong>Open</strong> to accept bookings.
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            <hr class="mt-4">
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-brand px-4">
+                    <i class="bi bi-check-lg me-1"></i>{{ 'Save Changes' if trek else 'Create Trek' }}
+                </button>
+                <a href="{{ url_for('admin_treks') }}" class="btn btn-outline-brand px-4">
+                    <i class="bi bi-x-lg me-1"></i>Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% endblock %}
