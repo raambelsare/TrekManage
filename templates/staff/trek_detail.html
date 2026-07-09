@@ -1,24 +1,16 @@
 {% extends "base.html" %}
-{% block title %}{{ trek.name }} — TrekManage{% endblock %}
+{% block title %}{{ trek.name }}{% endblock %}
 {% block content %}
 
 <div class="page-header">
     <div class="container">
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb mb-1">
-                <li class="breadcrumb-item"><a href="{{ url_for('staff_dashboard') }}">My Treks</a></li>
-                <li class="breadcrumb-item active">{{ trek.name }}</li>
-            </ol>
-        </nav>
-        <h2>
-            <i class="bi bi-map-fill me-2 text-forest"></i>{{ trek.name }}
-        </h2>
+        <h2>{{ trek.name }}</h2>
         <p>
-            <i class="bi bi-geo-alt me-1"></i>{{ trek.location }}
+            {{ trek.location }}
             &nbsp;&middot;&nbsp;
             <span class="badge badge-diff-{{ trek.difficulty }}">{{ trek.difficulty }}</span>
             &nbsp;&middot;&nbsp;
-            <i class="bi bi-clock me-1"></i>{{ trek.duration }} days
+            {{ trek.duration }} days
         </p>
     </div>
 </div>
@@ -26,12 +18,9 @@
 <div class="container pb-4">
     <div class="row g-4">
 
-        <!-- Update form -->
         <div class="col-lg-5">
             <div class="table-card">
-                <h5 class="section-title mb-3">
-                    <i class="bi bi-sliders me-2"></i>Update Trek
-                </h5>
+                <h5 class="section-title mb-3">Update Trek</h5>
                 <form method="POST">
                     <div class="mb-3">
                         <label class="form-label" for="total_slots">Total Slots</label>
@@ -42,7 +31,6 @@
                                name="total_slots"
                                value="{{ trek.total_slots }}">
                         <div class="form-text">
-                            <i class="bi bi-info-circle me-1"></i>
                             Currently booked: <strong>{{ trek.total_slots - trek.available_slots }}</strong>.
                             Cannot set below this number.
                         </div>
@@ -57,11 +45,10 @@
                         <div class="form-text">Set to <strong>Open</strong> to allow bookings.</div>
                     </div>
                     <button type="submit" class="btn btn-brand w-100">
-                        <i class="bi bi-check-lg me-1"></i>Save Updates
+                        Save Updates
                     </button>
                 </form>
 
-                <!-- Trek info summary -->
                 <hr class="my-3">
                 <div class="row text-center g-2">
                     <div class="col-4">
@@ -85,11 +72,10 @@
             </div>
         </div>
 
-        <!-- Participants table -->
         <div class="col-lg-7">
             <div class="table-card">
                 <h5 class="section-title mb-3">
-                    <i class="bi bi-people me-2"></i>Registered Participants
+                    Registered Participants
                     <span class="badge bg-light text-dark border ms-1">{{ participants|length }}</span>
                 </h5>
                 {% if participants %}
@@ -106,17 +92,14 @@
                         {% for p in participants %}
                         <tr>
                             <td>
-                                <div class="d-flex align-items-center gap-2">
-                                    <span class="avatar-circle">{{ p.trekker.name[0].upper() }}</span>
-                                    <span class="fw-600">{{ p.trekker.name }}</span>
-                                </div>
+                                <span class="fw-600">{{ p.trekker.name }}</span>
                             </td>
                             <td class="small text-muted">
-                                <div><i class="bi bi-envelope me-1"></i>{{ p.trekker.email }}</div>
-                                <div><i class="bi bi-telephone me-1"></i>{{ p.trekker.phone or '—' }}</div>
+                                <div>{{ p.trekker.email }}</div>
+                                <div>{{ p.trekker.phone or '—' }}</div>
                             </td>
                             <td class="small text-muted">
-                                <i class="bi bi-calendar3 me-1"></i>{{ p.booking_date.strftime('%d %b %Y') }}
+                                {{ p.booking_date.strftime('%d %b %Y') }}
                             </td>
                         </tr>
                         {% endfor %}
@@ -125,7 +108,6 @@
                 </div>
                 {% else %}
                 <div class="empty-state py-4">
-                    <div class="empty-icon"><i class="bi bi-people"></i></div>
                     <p>No participants have booked this trek yet.</p>
                 </div>
                 {% endif %}

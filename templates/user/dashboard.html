@@ -1,40 +1,32 @@
 {% extends "base.html" %}
-{% block title %}My Dashboard — TrekManage{% endblock %}
+{% block title %}My Dashboard{% endblock %}
 {% block content %}
 
-<!-- Welcome banner -->
 <div class="user-welcome-banner">
     <div class="container d-flex justify-content-between align-items-center flex-wrap gap-2">
         <div>
             <h2 class="mb-1 fw-700">
-                <i class="bi bi-sun me-2"></i>Welcome back, {{ current_user.name.split(' ')[0] }}!
+                Welcome back, {{ current_user.name }}!
             </h2>
             <p class="mb-0 opacity-75">Here's what's happening with your treks.</p>
         </div>
         <a href="{{ url_for('user_treks') }}" class="btn btn-light fw-600">
-            <i class="bi bi-binoculars me-1"></i>Browse Treks
+            Browse Treks
         </a>
     </div>
 </div>
 
 <div class="container pb-4">
 
-    <!-- Stat cards -->
     <div class="row g-3 mb-4">
         <div class="col-md-4">
             <div class="stat-card">
-                <div class="stat-icon stat-icon-clay">
-                    <i class="bi bi-ticket-perforated-fill"></i>
-                </div>
                 <div class="stat-value">{{ active_count }}</div>
                 <div class="stat-title">Active Bookings</div>
             </div>
         </div>
         <div class="col-md-4">
             <div class="stat-card">
-                <div class="stat-icon stat-icon-forest">
-                    <i class="bi bi-map-fill"></i>
-                </div>
                 <div class="stat-value">{{ open_treks|length }}</div>
                 <div class="stat-title">Open Treks Now</div>
             </div>
@@ -43,35 +35,28 @@
             <div class="stat-card d-flex flex-column justify-content-center align-items-start">
                 <div class="stat-title mb-2">Ready for your next adventure?</div>
                 <a href="{{ url_for('user_treks') }}" class="btn btn-brand">
-                    <i class="bi bi-backpack me-1"></i>Find a Trek
+                    Find a Trek
                 </a>
             </div>
         </div>
     </div>
 
-    <!-- Content -->
     <div class="row g-4">
 
-        <!-- Recent bookings -->
         <div class="col-lg-6">
             <div class="table-card h-100">
                 <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h5 class="section-title mb-0">
-                        <i class="bi bi-clock-history me-2"></i>Recent Bookings
-                    </h5>
+                    <h5 class="section-title mb-0">Recent Bookings</h5>
                     <a href="{{ url_for('user_bookings') }}" class="btn btn-sm btn-outline-brand">View All</a>
                 </div>
                 {% if my_bookings %}
                     {% for b in my_bookings %}
                     <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
                         <div class="d-flex align-items-center gap-2">
-                            <span class="avatar-circle" style="background:var(--moss);">
-                                {{ b.trek.name[0].upper() }}
-                            </span>
                             <div>
                                 <div class="fw-600 small">{{ b.trek.name }}</div>
                                 <div class="small text-muted">
-                                    <i class="bi bi-calendar3 me-1"></i>{{ b.booking_date.strftime('%d %b %Y') }}
+                                    {{ b.booking_date.strftime('%d %b %Y') }}
                                 </div>
                             </div>
                         </div>
@@ -80,20 +65,16 @@
                     {% endfor %}
                 {% else %}
                 <div class="empty-state py-4">
-                    <div class="empty-icon"><i class="bi bi-ticket-perforated"></i></div>
                     <p>No bookings yet. <a href="{{ url_for('user_treks') }}">Browse treks</a> to get started.</p>
                 </div>
                 {% endif %}
             </div>
         </div>
 
-        <!-- Open treks list -->
         <div class="col-lg-6">
             <div class="table-card h-100">
                 <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h5 class="section-title mb-0">
-                        <i class="bi bi-map me-2"></i>Open Treks
-                    </h5>
+                    <h5 class="section-title mb-0">Open Treks</h5>
                     <a href="{{ url_for('user_treks') }}" class="btn btn-sm btn-outline-brand">See All</a>
                 </div>
                 {% if open_treks %}
@@ -102,8 +83,7 @@
                         <div>
                             <div class="fw-600 small">{{ t.name }}</div>
                             <div class="small text-muted">
-                                <i class="bi bi-geo-alt me-1"></i>{{ t.location }}
-                                &middot;
+                                {{ t.location }} &middot;
                                 <span class="badge badge-diff-{{ t.difficulty }} small">{{ t.difficulty }}</span>
                             </div>
                         </div>
@@ -114,7 +94,6 @@
                     {% endfor %}
                 {% else %}
                 <div class="empty-state py-4">
-                    <div class="empty-icon"><i class="bi bi-map"></i></div>
                     <p>No treks open right now. Check back soon!</p>
                 </div>
                 {% endif %}

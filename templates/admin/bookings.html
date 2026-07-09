@@ -1,16 +1,10 @@
 {% extends "base.html" %}
-{% block title %}All Bookings — TrekManage{% endblock %}
+{% block title %}All Bookings{% endblock %}
 {% block content %}
 
 <div class="page-header">
     <div class="container">
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{{ url_for('admin_dashboard') }}">Dashboard</a></li>
-                <li class="breadcrumb-item active">Bookings</li>
-            </ol>
-        </nav>
-        <h2><i class="bi bi-calendar-check me-2 text-clay"></i>All Bookings</h2>
+        <h2>All Bookings</h2>
         <p>Complete historical record of trek bookings across the platform.</p>
     </div>
 </div>
@@ -36,19 +30,12 @@
                 <tr>
                     <td class="text-muted small">{{ b.id }}</td>
                     <td>
-                        <div class="d-flex align-items-center gap-2">
-                            <span class="avatar-circle avatar-forest" style="width:30px;height:30px;font-size:0.75rem;">
-                                {{ b.trekker.name[0].upper() }}
-                            </span>
-                            <div>
-                                <div class="fw-600 small">{{ b.trekker.name }}</div>
-                                <div class="text-muted" style="font-size:0.72rem;">@{{ b.trekker.username }}</div>
-                            </div>
-                        </div>
+                        <div class="fw-600 small">{{ b.trekker.name }}</div>
+                        <div class="text-muted" style="font-size:0.72rem;">@{{ b.trekker.username }}</div>
                     </td>
                     <td class="fw-600 small">{{ b.trek.name }}</td>
                     <td class="small text-muted">
-                        <i class="bi bi-geo-alt me-1"></i>{{ b.trek.location }}
+                        {{ b.trek.location }}
                     </td>
                     <td>
                         <span class="badge badge-diff-{{ b.trek.difficulty }}">{{ b.trek.difficulty }}</span>
@@ -58,9 +45,6 @@
                     </td>
                     <td>
                         <span class="badge badge-status-{{ b.status }}">
-                            {% if b.status == 'Booked' %}<i class="bi bi-check me-1"></i>
-                            {% elif b.status == 'Cancelled' %}<i class="bi bi-x me-1"></i>
-                            {% else %}<i class="bi bi-flag me-1"></i>{% endif %}
                             {{ b.status }}
                         </span>
                     </td>
@@ -71,7 +55,6 @@
         </div>
         {% else %}
         <div class="empty-state">
-            <i class="bi bi-calendar-x empty-icon"></i>
             <h6>No bookings yet</h6>
             <p>Bookings will appear here once trekkers start booking treks.</p>
         </div>

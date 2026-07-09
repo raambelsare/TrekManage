@@ -1,42 +1,32 @@
 {% extends "base.html" %}
-{% block title %}Log In — TrekManage{% endblock %}
+{% block title %}Log In{% endblock %}
 {% block content %}
-<div class="auth-wrapper">
-    <div class="auth-card" style="max-width:440px;">
+<div class="container d-flex justify-content-center align-items-center py-5">
+    <div class="auth-form-container" style="max-width:440px;">
 
         <div class="text-center mb-4">
-            <div class="auth-logo">
-                <i class="bi bi-person-fill-lock"></i>
-            </div>
             <h3 class="mt-2 mb-0">Welcome back</h3>
             <p class="text-muted small mt-1 mb-0">Sign in to your TrekManage account</p>
         </div>
 
         <form method="POST" action="{{ url_for('login') }}">
             <div class="mb-3">
-                <label class="form-label" for="username">
-                    <i class="bi bi-person me-1 text-moss"></i>Username
-                </label>
+                <label class="form-label" for="username">Username</label>
                 <input type="text" class="form-control" id="username" name="username"
                        placeholder="Enter your username" required autofocus>
             </div>
 
             <div class="mb-3">
-                <label class="form-label" for="password">
-                    <i class="bi bi-lock me-1 text-moss"></i>Password
-                </label>
+                <label class="form-label" for="password">Password</label>
                 <div class="input-group">
                     <input type="password" class="form-control" id="password" name="password"
                            placeholder="Enter your password" required>
-                    <button class="btn btn-outline-secondary" type="button" id="togglePassword"
-                            title="Show/hide password">
-                        <i class="bi bi-eye" id="eyeIcon"></i>
-                    </button>
+                    <button class="btn btn-outline-secondary" type="button" id="togglePassword">Show</button>
                 </div>
             </div>
 
             <button type="submit" class="btn btn-brand w-100 py-2 mt-2">
-                <i class="bi bi-box-arrow-in-right me-1"></i>Log In
+                Log In
             </button>
         </form>
 
@@ -45,53 +35,21 @@
             <a href="{{ url_for('register') }}" class="text-forest fw-600">Sign up here</a>
         </p>
 
-        <hr class="my-3">
-
-        <div>
-            <p class="text-center small text-muted mb-2 fw-600">
-                <i class="bi bi-info-circle me-1"></i>Demo Accounts
-            </p>
-            <div class="d-flex flex-wrap justify-content-center gap-2">
-                <a href="#" class="demo-cred-badge" data-user="admin" data-pass="admin123">
-                    <span class="role-badge role-admin">Admin</span>
-                    admin / admin123
-                </a>
-                <a href="#" class="demo-cred-badge" data-user="staff_ravi" data-pass="staff123">
-                    <span class="role-badge role-staff">Staff</span>
-                    staff_ravi / staff123
-                </a>
-                <a href="#" class="demo-cred-badge" data-user="trekker_amit" data-pass="user123">
-                    <span class="role-badge role-user">User</span>
-                    trekker_amit / user123
-                </a>
-            </div>
-        </div>
     </div>
 </div>
 {% endblock %}
 
 {% block scripts %}
 <script>
-    // Show/hide password toggle
     document.getElementById('togglePassword').addEventListener('click', function () {
         var input = document.getElementById('password');
-        var icon = document.getElementById('eyeIcon');
         if (input.type === 'password') {
             input.type = 'text';
-            icon.classList.replace('bi-eye', 'bi-eye-slash');
+            this.textContent = 'Hide';
         } else {
             input.type = 'password';
-            icon.classList.replace('bi-eye-slash', 'bi-eye');
+            this.textContent = 'Show';
         }
-    });
-
-    // Click demo credentials to auto-fill the form
-    document.querySelectorAll('.demo-cred-badge').forEach(function (el) {
-        el.addEventListener('click', function (e) {
-            e.preventDefault();
-            document.getElementById('username').value = this.dataset.user;
-            document.getElementById('password').value = this.dataset.pass;
-        });
     });
 </script>
 {% endblock %}

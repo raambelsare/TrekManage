@@ -1,6 +1,5 @@
 import os
 from datetime import datetime, date
-from functools import wraps
 
 from flask import Flask, render_template, redirect, url_for, flash, request, abort
 from flask_login import (
@@ -24,26 +23,9 @@ login_manager.login_view = "login"
 login_manager.login_message = "Please log in to access this page."
 login_manager.login_message_category = "warning"
 
-
 @login_manager.user_loader
 def load_user(user_id):
     return db.session.get(User, int(user_id))
-
-
-# ---------------------------------------------------------------------------
-# Access-control helpers
-# ---------------------------------------------------------------------------
-def role_required(*roles):
-    def decorator(f):
-        @wraps(f)
-        @login_required
-        def wrapped(*args, **kwargs):
-            if current_user.role not in roles:
-                abort(403)
-            return f(*args, **kwargs)
-        return wrapped
-    return decorator
-
 
 def parse_date(value):
     if not value:
@@ -53,10 +35,7 @@ def parse_date(value):
     except ValueError:
         return None
 
-
-# ---------------------------------------------------------------------------
-# Public / Auth routes
-# ---------------------------------------------------------------------------
+# homepage route
 @app.route("/")
 def index():
     if current_user.is_authenticated:
@@ -69,7 +48,7 @@ def index():
     )
     return render_template("index.html", open_treks=open_treks)
 
-
+# redirect to appropriate dashboard based on user role
 @app.route("/dashboard")
 @login_required
 def dashboard_router():
@@ -79,7 +58,7 @@ def dashboard_router():
         return redirect(url_for("staff_dashboard"))
     return redirect(url_for("user_dashboard"))
 
-
+# user/staff registration
 @app.route("/register", methods=["GET", "POST"])
 def register():
     if current_user.is_authenticated:
@@ -118,7 +97,7 @@ def register():
             email=email,
             phone=phone,
             role=role,
-            is_approved=(role == "user"),  # users need no approval, staff do
+            is_approved=(role == "user"),
         )
         new_user.set_password(password)
         db.session.add(new_user)
@@ -136,7 +115,7 @@ def register():
 
     return render_template("register.html", form={})
 
-
+# user login route
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if current_user.is_authenticated:
@@ -165,7 +144,7 @@ def login():
 
     return render_template("login.html")
 
-
+# logout route
 @app.route("/logout")
 @login_required
 def logout():
@@ -173,13 +152,13 @@ def logout():
     flash("You have been logged out.", "info")
     return redirect(url_for("index"))
 
-
-# ---------------------------------------------------------------------------
-# Admin routes
-# ---------------------------------------------------------------------------
+# admin home
 @app.route("/admin/dashboard")
-@role_required("admin")
+@login_required
 def admin_dashboard():
+    if current_user.role != "admin":
+        abort(403)
+        
     stats = {
         "total_treks": Trek.query.count(),
         "total_users": User.query.filter_by(role="user").count(),
@@ -191,17 +170,23 @@ def admin_dashboard():
     recent_bookings = Booking.query.order_by(Booking.booking_date.desc()).limit(5).all()
     return render_template("admin/dashboard.html", stats=stats, recent_bookings=recent_bookings)
 
-
+# list treks for admin
 @app.route("/admin/treks")
-@role_required("admin")
+@login_required
 def admin_treks():
+    if current_user.role != "admin":
+        abort(403)
+        
     treks = Trek.query.order_by(Trek.created_at.desc()).all()
     return render_template("admin/treks.html", treks=treks)
 
-
+# create new trek
 @app.route("/admin/treks/new", methods=["GET", "POST"])
-@role_required("admin")
+@login_required
 def admin_trek_new():
+    if current_user.role != "admin":
+        abort(403)
+        
     staff_list = User.query.filter_by(role="staff", is_approved=True, is_blacklisted=False).all()
 
     if request.method == "POST":
@@ -241,10 +226,13 @@ def admin_trek_new():
 
     return render_template("admin/trek_form.html", trek=None, staff_list=staff_list, form={})
 
-
+# edit a trek
 @app.route("/admin/treks/<int:trek_id>/edit", methods=["GET", "POST"])
-@role_required("admin")
+@login_required
 def admin_trek_edit(trek_id):
+    if current_user.role != "admin":
+        abort(403)
+        
     trek = db.get_or_404(Trek, trek_id)
     staff_list = User.query.filter_by(role="staff", is_approved=True, is_blacklisted=False).all()
 
@@ -261,7 +249,6 @@ def admin_trek_edit(trek_id):
         trek.end_date = parse_date(request.form.get("end_date"))
         trek.status = request.form.get("status", trek.status)
 
-        # Adjust available slots proportionally if total slots changed.
         if new_total is not None and new_total != trek.total_slots:
             diff = new_total - trek.total_slots
             trek.available_slots = max(0, trek.available_slots + diff)
@@ -278,27 +265,36 @@ def admin_trek_edit(trek_id):
 
     return render_template("admin/trek_form.html", trek=trek, staff_list=staff_list, form={})
 
-
+# delete a trek
 @app.route("/admin/treks/<int:trek_id>/delete", methods=["POST"])
-@role_required("admin")
+@login_required
 def admin_trek_delete(trek_id):
+    if current_user.role != "admin":
+        abort(403)
+        
     trek = db.get_or_404(Trek, trek_id)
     db.session.delete(trek)
     db.session.commit()
     flash(f"Trek '{trek.name}' has been removed.", "info")
     return redirect(url_for("admin_treks"))
 
-
+# list staff members
 @app.route("/admin/staff")
-@role_required("admin")
+@login_required
 def admin_staff():
+    if current_user.role != "admin":
+        abort(403)
+        
     staff = User.query.filter_by(role="staff").order_by(User.created_at.desc()).all()
     return render_template("admin/staff.html", staff=staff)
 
-
+# approve staff
 @app.route("/admin/staff/<int:staff_id>/approve", methods=["POST"])
-@role_required("admin")
+@login_required
 def admin_staff_approve(staff_id):
+    if current_user.role != "admin":
+        abort(403)
+        
     staff = User.query.filter_by(id=staff_id, role="staff").first_or_404()
     staff.is_approved = True
     staff.is_blacklisted = False
@@ -306,10 +302,13 @@ def admin_staff_approve(staff_id):
     flash(f"{staff.name} has been approved as trek staff.", "success")
     return redirect(url_for("admin_staff"))
 
-
+# assign staff to trek
 @app.route("/admin/staff/<int:staff_id>/assign", methods=["POST"])
-@role_required("admin")
+@login_required
 def admin_staff_assign(staff_id):
+    if current_user.role != "admin":
+        abort(403)
+        
     staff = User.query.filter_by(id=staff_id, role="staff").first_or_404()
     trek_id = request.form.get("trek_id", type=int)
     trek = db.get_or_404(Trek, trek_id)
@@ -320,17 +319,23 @@ def admin_staff_assign(staff_id):
     flash(f"{staff.name} assigned to '{trek.name}'.", "success")
     return redirect(url_for("admin_staff"))
 
-
+# list users
 @app.route("/admin/users")
-@role_required("admin")
+@login_required
 def admin_users():
+    if current_user.role != "admin":
+        abort(403)
+        
     users = User.query.filter_by(role="user").order_by(User.created_at.desc()).all()
     return render_template("admin/users.html", users=users)
 
-
+# blacklist toggle
 @app.route("/admin/blacklist/<int:user_id>", methods=["POST"])
-@role_required("admin")
+@login_required
 def admin_toggle_blacklist(user_id):
+    if current_user.role != "admin":
+        abort(403)
+        
     person = db.get_or_404(User, user_id)
     if person.role == "admin":
         abort(403)
@@ -341,17 +346,23 @@ def admin_toggle_blacklist(user_id):
     referrer = request.form.get("next") or url_for("admin_dashboard")
     return redirect(referrer)
 
-
+# view all bookings
 @app.route("/admin/bookings")
-@role_required("admin")
+@login_required
 def admin_bookings():
+    if current_user.role != "admin":
+        abort(403)
+        
     bookings = Booking.query.order_by(Booking.booking_date.desc()).all()
     return render_template("admin/bookings.html", bookings=bookings)
 
-
+# search user/staff/treks
 @app.route("/admin/search")
-@role_required("admin")
+@login_required
 def admin_search():
+    if current_user.role != "admin":
+        abort(403)
+        
     query = request.args.get("q", "").strip()
     users, staff, treks = [], [], []
     if query:
@@ -369,20 +380,23 @@ def admin_search():
         ).all()
     return render_template("admin/search.html", query=query, users=users, staff=staff, treks=treks)
 
-
-# ---------------------------------------------------------------------------
-# Trek Staff routes
-# ---------------------------------------------------------------------------
+# staff dashboard
 @app.route("/staff/dashboard")
-@role_required("staff")
+@login_required
 def staff_dashboard():
+    if current_user.role != "staff":
+        abort(403)
+        
     treks = Trek.query.filter_by(assigned_staff_id=current_user.id).order_by(Trek.start_date.asc()).all()
     return render_template("staff/dashboard.html", treks=treks)
 
-
+# staff trek details page
 @app.route("/staff/trek/<int:trek_id>", methods=["GET", "POST"])
-@role_required("staff")
+@login_required
 def staff_trek_detail(trek_id):
+    if current_user.role != "staff":
+        abort(403)
+        
     trek = db.get_or_404(Trek, trek_id)
     if trek.assigned_staff_id != current_user.id:
         abort(403)
@@ -406,13 +420,13 @@ def staff_trek_detail(trek_id):
     participants = Booking.query.filter_by(trek_id=trek.id, status="Booked").all()
     return render_template("staff/trek_detail.html", trek=trek, participants=participants)
 
-
-# ---------------------------------------------------------------------------
-# User (Trekker) routes
-# ---------------------------------------------------------------------------
+# user dashboard
 @app.route("/user/dashboard")
-@role_required("user")
+@login_required
 def user_dashboard():
+    if current_user.role != "user":
+        abort(403)
+        
     my_bookings = (
         Booking.query.filter_by(user_id=current_user.id)
         .order_by(Booking.booking_date.desc())
@@ -428,10 +442,13 @@ def user_dashboard():
         active_count=active_count,
     )
 
-
+# browse treks for user
 @app.route("/user/treks")
-@role_required("user")
+@login_required
 def user_treks():
+    if current_user.role != "user":
+        abort(403)
+        
     query = Trek.query.filter_by(status="Open")
 
     location = request.args.get("location", "").strip()
@@ -460,20 +477,26 @@ def user_treks():
         search=search,
     )
 
-
+# user trek detail
 @app.route("/user/trek/<int:trek_id>")
-@role_required("user")
+@login_required
 def user_trek_detail(trek_id):
+    if current_user.role != "user":
+        abort(403)
+        
     trek = db.get_or_404(Trek, trek_id)
     already_booked = Booking.query.filter_by(
         user_id=current_user.id, trek_id=trek.id, status="Booked"
     ).first()
     return render_template("user/trek_detail.html", trek=trek, already_booked=already_booked)
 
-
+# book a trek
 @app.route("/user/book/<int:trek_id>", methods=["POST"])
-@role_required("user")
+@login_required
 def user_book_trek(trek_id):
+    if current_user.role != "user":
+        abort(403)
+        
     trek = db.get_or_404(Trek, trek_id)
 
     if trek.status != "Open":
@@ -498,10 +521,13 @@ def user_book_trek(trek_id):
     flash(f"Trek '{trek.name}' booked successfully! Happy trekking.", "success")
     return redirect(url_for("user_bookings"))
 
-
+# view user bookings
 @app.route("/user/bookings")
-@role_required("user")
+@login_required
 def user_bookings():
+    if current_user.role != "user":
+        abort(403)
+        
     bookings = (
         Booking.query.filter_by(user_id=current_user.id)
         .order_by(Booking.booking_date.desc())
@@ -509,10 +535,13 @@ def user_bookings():
     )
     return render_template("user/bookings.html", bookings=bookings)
 
-
+# cancel booking
 @app.route("/user/bookings/<int:booking_id>/cancel", methods=["POST"])
-@role_required("user")
+@login_required
 def user_cancel_booking(booking_id):
+    if current_user.role != "user":
+        abort(403)
+        
     booking = db.get_or_404(Booking, booking_id)
     if booking.user_id != current_user.id:
         abort(403)
@@ -527,10 +556,13 @@ def user_cancel_booking(booking_id):
 
     return redirect(url_for("user_bookings"))
 
-
+# edit user profile
 @app.route("/user/profile", methods=["GET", "POST"])
-@role_required("user", "staff")
+@login_required
 def user_profile():
+    if current_user.role not in ("user", "staff"):
+        abort(403)
+        
     if request.method == "POST":
         current_user.name = request.form.get("name", current_user.name).strip()
         current_user.phone = request.form.get("phone", current_user.phone).strip()
@@ -543,28 +575,19 @@ def user_profile():
 
     return render_template("user/profile.html")
 
-
-# ---------------------------------------------------------------------------
-# Error handlers
-# ---------------------------------------------------------------------------
+# error handlers
 @app.errorhandler(403)
 def forbidden(e):
     return render_template("errors.html", code=403, message="You don't have permission to access this page."), 403
-
 
 @app.errorhandler(404)
 def not_found(e):
     return render_template("errors.html", code=404, message="Page not found."), 404
 
-
 @app.errorhandler(500)
 def server_error(e):
     return render_template("errors.html", code=500, message="Something went wrong on our end."), 500
 
-
-# ---------------------------------------------------------------------------
-# Database bootstrap: create tables + seed admin/sample data programmatically
-# ---------------------------------------------------------------------------
 def seed_database():
     db.create_all()
 
@@ -580,46 +603,38 @@ def seed_database():
         admin.set_password("admin123")
         db.session.add(admin)
 
-    if not User.query.filter_by(username="staff_ravi").first():
-        staff1 = User(
-            name="Ravi Sharma",
-            username="staff_ravi",
-            email="ravi@trekmanage.com",
-            phone="9876543210",
-            role="staff",
-            is_approved=True,
-        )
-        staff1.set_password("staff123")
-        db.session.add(staff1)
+    for i in range(1, 6):
+        uname = f"user{i}"
+        if not User.query.filter_by(username=uname).first():
+            user = User(
+                name=f"User {i}",
+                username=uname,
+                email=f"user{i}@example.com",
+                phone=f"980000000{i}",
+                role="user",
+                is_approved=True,
+            )
+            user.set_password("user123")
+            db.session.add(user)
 
-    if not User.query.filter_by(username="staff_neha").first():
-        staff2 = User(
-            name="Neha Verma",
-            username="staff_neha",
-            email="neha@trekmanage.com",
-            phone="9876500000",
-            role="staff",
-            is_approved=False,  # pending approval, to demo the approval flow
-        )
-        staff2.set_password("staff123")
-        db.session.add(staff2)
-
-    if not User.query.filter_by(username="trekker_amit").first():
-        user1 = User(
-            name="Amit Kumar",
-            username="trekker_amit",
-            email="amit@example.com",
-            phone="9812345678",
-            role="user",
-            is_approved=True,
-        )
-        user1.set_password("user123")
-        db.session.add(user1)
+    for i in range(1, 3):
+        uname = f"guide{i}"
+        if not User.query.filter_by(username=uname).first():
+            guide = User(
+                name=f"Guide {i}",
+                username=uname,
+                email=f"guide{i}@trekmanage.com",
+                phone=f"970000000{i}",
+                role="staff",
+                is_approved=True,
+            )
+            guide.set_password("guide123")
+            db.session.add(guide)
 
     db.session.commit()
 
     if Trek.query.count() == 0:
-        ravi = User.query.filter_by(username="staff_ravi").first()
+        guide1 = User.query.filter_by(username="guide1").first()
         treks = [
             Trek(
                 name="Hampta Pass Trek",
@@ -628,10 +643,9 @@ def seed_database():
                 duration=5,
                 total_slots=20,
                 available_slots=14,
-                description="A stunning crossover trek from the green Kullu valley to the "
-                             "arid landscape of Lahaul, famous for dramatic terrain changes.",
+                description="A crossover trek from Kullu valley to Lahaul landscape, famous for dramatic terrain changes.",
                 price=8500,
-                assigned_staff_id=ravi.id,
+                assigned_staff_id=guide1.id,
                 status="Open",
                 start_date=date(2026, 8, 10),
                 end_date=date(2026, 8, 15),
@@ -643,10 +657,9 @@ def seed_database():
                 duration=4,
                 total_slots=25,
                 available_slots=25,
-                description="One of the best winter treks in India, offering panoramic "
-                             "summit views of snow-capped Himalayan peaks.",
+                description="Winter trek in India, offering panoramic views of Himalayan peaks.",
                 price=6500,
-                assigned_staff_id=ravi.id,
+                assigned_staff_id=guide1.id,
                 status="Open",
                 start_date=date(2026, 9, 5),
                 end_date=date(2026, 9, 9),
@@ -658,8 +671,7 @@ def seed_database():
                 duration=8,
                 total_slots=15,
                 available_slots=15,
-                description="A mysterious high-altitude glacial lake trek, known for its "
-                             "skeletal remains and challenging terrain.",
+                description="High-altitude lake trek, known for skeletal remains and challenging terrain.",
                 price=12000,
                 assigned_staff_id=None,
                 status="Pending",
@@ -670,10 +682,8 @@ def seed_database():
         db.session.add_all(treks)
         db.session.commit()
 
-
 with app.app_context():
     seed_database()
-
 
 if __name__ == "__main__":
     app.run(debug=True, port=5000)

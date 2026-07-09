@@ -1,100 +1,79 @@
 {% extends "base.html" %}
-{% block title %}Sign Up — TrekManage{% endblock %}
+{% block title %}Sign Up{% endblock %}
 {% block content %}
-<div class="auth-wrapper">
-    <div class="auth-card" style="max-width:540px;">
+<div class="container d-flex justify-content-center align-items-center py-5">
+    <div class="auth-form-container" style="max-width:540px;">
 
         <div class="text-center mb-4">
-            <div class="auth-logo">
-                <i class="bi bi-person-plus-fill"></i>
-            </div>
             <h3 class="mt-2 mb-0">Create your account</h3>
             <p class="text-muted small mt-1 mb-0">Join as a Trekker or apply as Trek Staff</p>
         </div>
 
         <form method="POST" action="{{ url_for('register') }}">
 
-            {# Role selection as toggle pills #}
             <div class="mb-4">
-                <label class="form-label">
-                    <i class="bi bi-person-badge me-1 text-moss"></i>I am registering as
-                </label>
+                <label class="form-label">I am registering as</label>
                 <div class="d-flex gap-2" id="roleToggle">
                     <input type="radio" class="btn-check" name="role" id="roleUser" value="user"
                            {% if form.get('role', 'user') == 'user' %}checked{% endif %}>
                     <label class="btn btn-outline-brand flex-fill" for="roleUser">
-                        <i class="bi bi-backpack2 me-1"></i>Trekker
+                        Trekker
                     </label>
 
                     <input type="radio" class="btn-check" name="role" id="roleStaff" value="staff"
                            {% if form.get('role') == 'staff' %}checked{% endif %}>
                     <label class="btn btn-outline-brand flex-fill" for="roleStaff">
-                        <i class="bi bi-compass me-1"></i>Trek Staff
+                        Trek Staff
                     </label>
                 </div>
                 <div class="form-text mt-1" id="staffNote" style="{% if form.get('role') != 'staff' %}display:none;{% endif %}">
-                    <i class="bi bi-info-circle text-warning me-1"></i>
                     Staff accounts require admin approval before you can log in.
                 </div>
             </div>
 
             <div class="row">
                 <div class="col-md-6 mb-3">
-                    <label class="form-label" for="name">
-                        <i class="bi bi-person me-1 text-moss"></i>Full Name *
-                    </label>
+                    <label class="form-label" for="name">Full Name *</label>
                     <input type="text" class="form-control" id="name" name="name"
                            value="{{ form.get('name', '') }}" placeholder="Your full name" required>
                 </div>
                 <div class="col-md-6 mb-3">
-                    <label class="form-label" for="username">
-                        <i class="bi bi-at me-1 text-moss"></i>Username *
-                    </label>
+                    <label class="form-label" for="username">Username *</label>
                     <input type="text" class="form-control" id="username" name="username"
                            value="{{ form.get('username', '') }}" placeholder="Choose a username" required>
                 </div>
             </div>
 
             <div class="mb-3">
-                <label class="form-label" for="email">
-                    <i class="bi bi-envelope me-1 text-moss"></i>Email *
-                </label>
+                <label class="form-label" for="email">Email *</label>
                 <input type="email" class="form-control" id="email" name="email"
                        value="{{ form.get('email', '') }}" placeholder="your@email.com" required>
             </div>
 
             <div class="mb-3">
-                <label class="form-label" for="phone">
-                    <i class="bi bi-phone me-1 text-moss"></i>Phone
-                </label>
+                <label class="form-label" for="phone">Phone</label>
                 <input type="text" class="form-control" id="phone" name="phone"
                        value="{{ form.get('phone', '') }}" placeholder="Optional contact number">
             </div>
 
             <div class="row">
                 <div class="col-md-6 mb-3">
-                    <label class="form-label" for="password">
-                        <i class="bi bi-lock me-1 text-moss"></i>Password *
-                    </label>
+                    <label class="form-label" for="password">Password *</label>
                     <div class="input-group">
                         <input type="password" class="form-control" id="password" name="password"
                                placeholder="Min. 6 characters" required>
-                        <button class="btn btn-outline-secondary" type="button" id="togglePwd">
-                            <i class="bi bi-eye" id="eyeIcon1"></i>
-                        </button>
+                        <button class="btn btn-outline-secondary" type="button" id="togglePwd">Show</button>
                     </div>
                 </div>
                 <div class="col-md-6 mb-3">
-                    <label class="form-label" for="confirm_password">
-                        <i class="bi bi-lock-fill me-1 text-moss"></i>Confirm Password *
-                    </label>
+                    <label class="form-label" for="confirm_password">Confirm Password *</label>
                     <input type="password" class="form-control" id="confirm_password"
                            name="confirm_password" placeholder="Repeat password" required>
                 </div>
             </div>
 
             <button type="submit" class="btn btn-brand w-100 py-2 mt-1">
-                <i class="bi bi-person-check me-1"></i>Create Account
+                Create Account
             </button>
         </form>
 
@@ -108,7 +87,6 @@
 
 {% block scripts %}
 <script>
-    // Show/hide staff approval note when role changes
     document.querySelectorAll('input[name="role"]').forEach(function (radio) {
         radio.addEventListener('change', function () {
             var note = document.getElementById('staffNote');
@@ -116,16 +94,14 @@
         });
     });
 
-    // Show/hide password toggle
     document.getElementById('togglePwd').addEventListener('click', function () {
         var input = document.getElementById('password');
-        var icon = document.getElementById('eyeIcon1');
         if (input.type === 'password') {
             input.type = 'text';
-            icon.classList.replace('bi-eye', 'bi-eye-slash');
+            this.textContent = 'Hide';
         } else {
             input.type = 'password';
-            icon.classList.replace('bi-eye-slash', 'bi-eye');
+            this.textContent = 'Show';
         }
     });
 </script>

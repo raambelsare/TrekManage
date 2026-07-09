@@ -1,15 +1,15 @@
 {% extends "base.html" %}
-{% block title %}Staff Dashboard — TrekManage{% endblock %}
+{% block title %}Staff Dashboard{% endblock %}
 {% block content %}
 
 <div class="page-header">
     <div class="container d-flex justify-content-between align-items-center flex-wrap gap-2">
         <div>
-            <h2><i class="bi bi-compass me-2 text-forest"></i>My Assigned Treks</h2>
-            <p>Welcome back, <strong>{{ current_user.name.split(' ')[0] }}</strong>! Manage your trek details and participants.</p>
+            <h2>My Assigned Treks</h2>
+            <p>Welcome back, <strong>{{ current_user.name }}</strong>! Manage your trek details and participants.</p>
         </div>
         <a href="{{ url_for('user_profile') }}" class="btn btn-outline-brand btn-sm">
-            <i class="bi bi-person-circle me-1"></i>My Profile
+            My Profile
         </a>
     </div>
 </div>
@@ -18,7 +18,6 @@
 
     {% if treks %}
 
-    <!-- Summary bar -->
     <div class="row g-3 mb-4">
         <div class="col-6 col-md-3">
             <div class="stat-card text-center py-3">
@@ -49,14 +48,12 @@
         </div>
     </div>
 
-    <!-- Trek cards -->
     <div class="row g-4">
         {% for trek in treks %}
         {% set pct_booked = (trek.booked_count / trek.total_slots * 100)|int if trek.total_slots > 0 else 0 %}
         <div class="col-md-6 col-lg-4">
             <div class="card trek-card h-100">
                 <div class="trek-banner trek-banner-{% if trek.difficulty == 'Easy' %}easy{% elif trek.difficulty == 'Hard' %}hard{% else %}moderate{% endif %}">
-                    <i class="bi bi-compass text-white" style="font-size:2.5rem;opacity:.8;"></i>
                 </div>
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-start mb-2">
@@ -64,17 +61,14 @@
                         <span class="badge badge-status-{{ trek.status }} flex-shrink-0 ms-2">{{ trek.status }}</span>
                     </div>
                     <p class="text-muted small mb-2">
-                        <i class="bi bi-geo-alt me-1"></i>{{ trek.location }}
-                        &nbsp;&middot;&nbsp;
-                        <i class="bi bi-clock me-1"></i>{{ trek.duration }} days
+                        {{ trek.location }} &middot; {{ trek.duration }} days
                     </p>
                     {% if trek.start_date %}
                     <p class="text-muted small mb-3">
-                        <i class="bi bi-calendar3 me-1"></i>{{ trek.start_date.strftime('%d %b') }} – {{ trek.end_date.strftime('%d %b %Y') }}
+                        {{ trek.start_date.strftime('%d %b') }} – {{ trek.end_date.strftime('%d %b %Y') }}
                     </p>
                     {% endif %}
 
-                    <!-- Slot progress -->
                     <div class="d-flex justify-content-between small mb-1">
                         <span class="text-muted">Participants</span>
                         <span class="fw-600">{{ trek.booked_count }}/{{ trek.total_slots }}</span>
@@ -85,7 +79,7 @@
                     </div>
 
                     <a href="{{ url_for('staff_trek_detail', trek_id=trek.id) }}" class="btn btn-outline-brand w-100 btn-sm">
-                        <i class="bi bi-gear me-1"></i>Manage Trek
+                        Manage Trek
                     </a>
                 </div>
             </div>
@@ -95,7 +89,6 @@
 
     {% else %}
     <div class="empty-state" style="padding: 5rem 1.5rem;">
-        <div class="empty-icon"><i class="bi bi-compass"></i></div>
         <h5>No treks assigned yet</h5>
         <p>The admin will assign treks to you soon. Check back later.</p>
     </div>

@@ -1,16 +1,10 @@
 {% extends "base.html" %}
-{% block title %}Manage Staff — TrekManage{% endblock %}
+{% block title %}Manage Staff{% endblock %}
 {% block content %}
 
 <div class="page-header">
     <div class="container">
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{{ url_for('admin_dashboard') }}">Dashboard</a></li>
-                <li class="breadcrumb-item active">Staff</li>
-            </ol>
-        </nav>
-        <h2><i class="bi bi-people me-2 text-clay"></i>Manage Trek Staff</h2>
+        <h2>Manage Trek Staff</h2>
         <p>Approve registrations, assign treks, and manage staff accounts.</p>
     </div>
 </div>
@@ -34,19 +28,12 @@
                 {% for s in staff %}
                 <tr>
                     <td>
-                        <div class="d-flex align-items-center gap-2">
-                            <span class="avatar-circle {% if s.is_blacklisted %}avatar-clay{% elif s.is_approved %}avatar-sky{% else %}avatar-moss{% endif %}">
-                                {{ s.name[0].upper() }}
-                            </span>
-                            <div>
-                                <div class="fw-600 small">{{ s.name }}</div>
-                                <div class="text-muted" style="font-size:0.75rem;">@{{ s.username }}</div>
-                            </div>
-                        </div>
+                        <div class="fw-600 small">{{ s.name }}</div>
+                        <div class="text-muted" style="font-size:0.75rem;">@{{ s.username }}</div>
                     </td>
                     <td class="small">
-                        <div><i class="bi bi-envelope me-1 text-muted"></i>{{ s.email }}</div>
-                        <div class="text-muted"><i class="bi bi-phone me-1"></i>{{ s.phone or '—' }}</div>
+                        <div>{{ s.email }}</div>
+                        <div class="text-muted">{{ s.phone or '—' }}</div>
                     </td>
                     <td>
                         {% if s.assigned_treks %}
@@ -59,17 +46,11 @@
                     </td>
                     <td>
                         {% if s.is_blacklisted %}
-                            <span class="badge bg-danger">
-                                <i class="bi bi-ban me-1"></i>Blacklisted
-                            </span>
+                            <span class="badge bg-danger">Blacklisted</span>
                         {% elif not s.is_approved %}
-                            <span class="badge badge-status-Pending">
-                                <i class="bi bi-hourglass-split me-1"></i>Pending
-                            </span>
+                            <span class="badge badge-status-Pending">Pending Approval</span>
                         {% else %}
-                            <span class="badge badge-status-Open">
-                                <i class="bi bi-check-circle me-1"></i>Active
-                            </span>
+                            <span class="badge badge-status-Open">Active</span>
                         {% endif %}
                     </td>
                     <td class="small text-muted">
@@ -78,9 +59,7 @@
                     <td class="text-nowrap">
                         {% if not s.is_approved and not s.is_blacklisted %}
                         <form method="POST" action="{{ url_for('admin_staff_approve', staff_id=s.id) }}" class="d-inline">
-                            <button type="submit" class="btn btn-sm btn-forest me-1">
-                                <i class="bi bi-check-lg me-1"></i>Approve
-                            </button>
+                            <button type="submit" class="btn btn-sm btn-forest me-1">Approve</button>
                         </form>
                         {% endif %}
 
@@ -88,11 +67,7 @@
                             <input type="hidden" name="next" value="{{ url_for('admin_staff') }}">
                             <button type="submit"
                                     class="btn btn-sm {% if s.is_blacklisted %}btn-outline-success{% else %}btn-outline-danger{% endif %}">
-                                {% if s.is_blacklisted %}
-                                    <i class="bi bi-arrow-counterclockwise me-1"></i>Reinstate
-                                {% else %}
-                                    <i class="bi bi-ban me-1"></i>Blacklist
-                                {% endif %}
+                                {% if s.is_blacklisted %}Reinstate{% else %}Blacklist{% endif %}
                             </button>
                         </form>
                     </td>
@@ -103,7 +78,6 @@
         </div>
         {% else %}
         <div class="empty-state">
-            <i class="bi bi-compass empty-icon"></i>
             <h6>No staff registered yet</h6>
             <p>Staff accounts will appear here once they register.</p>
         </div>

@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}TrekManage — Plan, Book, and Manage Treks{% endblock %}
+{% block title %}TrekManage{% endblock %}
 {% block content %}
 
 <section class="hero">
@@ -7,7 +7,7 @@
         <div class="row align-items-center">
             <div class="col-lg-7">
                 <span class="badge bg-white text-forest mb-3 px-3 py-2 fw-600" style="font-size:0.8rem;">
-                    <i class="bi bi-stars me-1 text-clay"></i>Trekking Management Platform
+                    Trekking Management Platform
                 </span>
                 <h1>Manage every trek, staff, and booking in one place.</h1>
                 <p class="lead mt-2">
@@ -16,10 +16,10 @@
                 </p>
                 <div class="d-flex gap-2 flex-wrap mt-4">
                     <a href="{{ url_for('register') }}" class="btn btn-brand btn-lg px-4">
-                        <i class="bi bi-person-plus me-1"></i>Get Started Free
+                        Get Started Free
                     </a>
                     <a href="{{ url_for('login') }}" class="btn btn-outline-light btn-lg px-4">
-                        <i class="bi bi-box-arrow-in-right me-1"></i>Log In
+                        Log In
                     </a>
                 </div>
                 <div class="hero-stats">
@@ -38,14 +38,12 @@
                 </div>
             </div>
             <div class="col-lg-5 d-none d-lg-flex justify-content-center">
-                <div class="hero-visual">🏔️</div>
+                <div class="hero-visual" style="font-size: 8rem;"></div>
             </div>
         </div>
     </div>
 </section>
 
-
-{# Open Treks Section #}
 <div class="container my-5">
     <div class="d-flex justify-content-between align-items-end mb-4 flex-wrap gap-2">
         <div>
@@ -53,7 +51,7 @@
             <p class="text-muted mb-0 small">Browse available adventures — log in to book your spot.</p>
         </div>
         <a href="{{ url_for('login') }}" class="btn btn-outline-brand">
-            Log in to book <i class="bi bi-arrow-right ms-1"></i>
+            Log in to book
         </a>
     </div>
 
@@ -63,13 +61,6 @@
         <div class="col-md-6 col-lg-4">
             <div class="card trek-card h-100">
                 <div class="trek-banner trek-banner-{{ trek.difficulty|lower }}">
-                    {% if trek.difficulty == 'Easy' %}
-                        <i class="bi bi-tree"></i>
-                    {% elif trek.difficulty == 'Hard' %}
-                        <i class="bi bi-tsunami"></i>
-                    {% else %}
-                        <i class="bi bi-mountain"></i>
-                    {% endif %}
                 </div>
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-start mb-2">
@@ -77,9 +68,7 @@
                         <span class="badge badge-diff-{{ trek.difficulty }} ms-2 flex-shrink-0">{{ trek.difficulty }}</span>
                     </div>
                     <p class="text-muted small mb-2">
-                        <i class="bi bi-geo-alt me-1"></i>{{ trek.location }}
-                        <span class="mx-1">·</span>
-                        <i class="bi bi-clock me-1"></i>{{ trek.duration }} days
+                        {{ trek.location }} &middot; {{ trek.duration }} days
                     </p>
                     <p class="small text-muted mb-3" style="line-height:1.5;">
                         {{ (trek.description or '')[:90] }}{% if trek.description and trek.description|length > 90 %}…{% endif %}
@@ -90,7 +79,7 @@
                             ₹{{ "%.0f"|format(trek.price) }}
                         </span>
                         <span class="small text-muted">
-                            <i class="bi bi-people me-1"></i>{{ trek.available_slots }} slots left
+                            {{ trek.available_slots }} slots left
                         </span>
                     </div>
                 </div>
@@ -100,15 +89,12 @@
     </div>
     {% else %}
     <div class="empty-state">
-        <i class="bi bi-tent empty-icon"></i>
         <h6>No open treks right now</h6>
         <p>New adventures are added regularly — check back soon!</p>
     </div>
     {% endif %}
 </div>
 
-
-{# Features Section #}
 <div class="container mb-5">
     <div class="text-center mb-4">
         <h2 class="section-title">One platform, three portals</h2>
@@ -117,21 +103,15 @@
     <div class="row g-4">
         <div class="col-md-4">
             <div class="feature-card">
-                <div class="feature-icon icon-clay">
-                    <i class="bi bi-shield-check text-clay" style="font-size:1.6rem;"></i>
-                </div>
                 <h5 class="fw-600">Admin Control</h5>
                 <p class="text-muted small mb-0">
                     Approve staff, assign treks, manage users, and monitor all bookings
-                    from a single powerful dashboard.
+                    from a single dashboard.
                 </p>
             </div>
         </div>
         <div class="col-md-4">
             <div class="feature-card">
-                <div class="feature-icon icon-sky">
-                    <i class="bi bi-compass text-sky-dark" style="font-size:1.6rem;color:var(--sky-dark)!important;"></i>
-                </div>
                 <h5 class="fw-600">Staff Coordination</h5>
                 <p class="text-muted small mb-0">
                     Trek staff update slot counts and trek status in real time, keeping
@@ -141,9 +121,6 @@
         </div>
         <div class="col-md-4">
             <div class="feature-card">
-                <div class="feature-icon icon-moss">
-                    <i class="bi bi-backpack2 text-moss" style="font-size:1.6rem;color:var(--moss)!important;"></i>
-                </div>
                 <h5 class="fw-600">Effortless Booking</h5>
                 <p class="text-muted small mb-0">
                     Trekkers search, filter by difficulty and location, and book in seconds.
